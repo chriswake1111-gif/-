@@ -5,9 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#4f46e5" />
     <meta name="description" content="Sales Data Cleaner & Categorizer PWA" />
-    <link rel="manifest" href="./manifest.json" />
+    
+    <!-- PWA / Mobile Web App capable -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="銷售清理">
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/10009/10009277.png" />
+    
     <title>Sales Data Processor</title>
+    <!-- We keep Tailwind CDN for simplicity in this migration, though standard Vite apps usually import CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -21,7 +28,7 @@
         },
       }
     </script>
-  <script type="importmap">
+<script type="importmap">
 {
   "imports": {
     "react": "https://aistudiocdn.com/react@^19.2.0",
@@ -29,12 +36,15 @@
     "react/": "https://aistudiocdn.com/react@^19.2.0/",
     "xlsx": "https://aistudiocdn.com/xlsx@^0.18.5",
     "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
-    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
   }
 }
 </script>
 </head>
   <body class="bg-slate-50 text-slate-900">
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>

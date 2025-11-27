@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Download, FileSpreadsheet, RefreshCw, CheckCircle2, Monitor, ExternalLink, DownloadCloud } from 'lucide-react';
+import { Download, FileSpreadsheet, RefreshCw, CheckCircle2, Monitor, ExternalLink, DownloadCloud, X, HelpCircle } from 'lucide-react';
 import { parseExcel, processData, exportToExcel } from './services/excelService';
 import { ProcessedResult, CheckStatus } from './types';
 import Dropzone from './components/Dropzone';
@@ -16,6 +16,7 @@ function App() {
   
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isStandalone, setIsStandalone] = useState(false);
+  const [showInstallHelp, setShowInstallHelp] = useState(false);
 
   useEffect(() => {
     const checkStandalone = () => {
@@ -37,10 +38,14 @@ function App() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setDeferredPrompt(null);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setDeferredPrompt(null);
+    } else {
+      // Fallback for browsers that don't support beforeinstallprompt (e.g., Safari, Firefox)
+      setShowInstallHelp(true);
+    }
   };
 
   const handleFileAccepted = async (file: File) => {
@@ -106,23 +111,69 @@ function App() {
   const popupColumns = ['日期', '客戶編號', '品項編號', '品名', '點數'];
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 font-sans text-slate-900 pt-16">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8 font-sans text-slate-900 pt-16 relative">
       
       {!isStandalone && (
-        <div className="fixed top-0 left-0 right-0 bg-yellow-50 border-b border-yellow-200 text-yellow-800 px-4 py-2 text-center text-xs font-medium z-50 flex justify-center items-center h-10">
+        <div className="fixed top-0 left-0 right-0 bg-yellow-50 border-b border-yellow-200 text-yellow-800 px-4 py-2 text-center text-xs font-medium z-40 flex justify-center items-center h-10">
           <Monitor size={14} className="mr-2" />
           此程式優化為電腦端使用，請確保使用大螢幕設備以獲得最佳體驗。
         </div>
       )}
 
-      {deferredPrompt && (
-        <button
-          onClick={handleInstallClick}
-          className="fixed top-3 right-4 z-50 inline-flex items-center px-3 py-1.5 border border-indigo-600 shadow-sm text-xs font-medium rounded-full text-indigo-600 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all animate-pulse"
-        >
-          <DownloadCloud size={14} className="mr-1.5" />
-          安裝至桌面
-        </button>
+      {/* Top Right Action Area */}
+      {!isStandalone && (
+        <div className="absolute top-14 right-6 z-40">
+           <button
+            onClick={handleInstallClick}
+            className="inline-flex items-center px-4 py-2 border border-indigo-200 shadow-sm text-sm font-medium rounded-full text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+          >
+            <DownloadCloud size={16} className="mr-2" />
+            安裝應用程式
+          </button>
+        </div>
+      )}
+
+      {/* Install Help Modal */}
+      {showInstallHelp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+            <button 
+              onClick={() => setShowInstallHelp(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-3 bg-indigo-100 rounded-full text-indigo-600">
+                <DownloadCloud size={24} />
+              </div>
+              <h3 className="text-lg font-bold text-slate-900">安裝教學</h3>
+            </div>
+            
+            <p className="text-slate-600 mb-6 text-sm leading-relaxed">
+              您的瀏覽器可能需要手動安裝。請依照以下步驟將此應用程式安裝到您的電腦，獲得類似原生軟體的體驗：
+            </p>
+
+            <div className="space-y-4 text-sm text-slate-700">
+              <div className="flex items-start">
+                <div className="bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded mr-3 text-xs mt-0.5">Chrome / Edge</div>
+                <p>請點擊瀏覽器網址列右側的 <span className="inline-block border border-slate-300 rounded px-1 mx-1"><Monitor size={10} className="inline" /> 安裝</span> 圖示。</p>
+              </div>
+               <div className="flex items-start">
+                <div className="bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded mr-3 text-xs mt-0.5">Safari (Mac)</div>
+                <p>請點擊分享按鈕 <span className="inline-block border border-slate-300 rounded px-1 mx-1">↑</span>，然後選擇「加入 Dock」。</p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowInstallHelp(false)}
+              className="mt-6 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors"
+            >
+              了解
+            </button>
+          </div>
+        </div>
       )}
 
       <div className="max-w-7xl mx-auto space-y-8 mt-4">
