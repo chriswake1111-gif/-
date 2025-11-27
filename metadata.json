@@ -1,0 +1,5 @@
+{
+  "name": "Sales Data Cleaner & Categorizer",
+  "description": "A tool to upload sales Excel files, filter data based on specific business rules, categorize items, and export the cleaned results.",
+  "requestFramePermissions": []
+}
