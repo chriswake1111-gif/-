@@ -1,12 +1,19 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { Download, FileSpreadsheet, RefreshCw, CheckCircle2, Monitor, ExternalLink, DownloadCloud, X, HelpCircle } from 'lucide-react';
+import { Download, FileSpreadsheet, RefreshCw, CheckCircle2, Monitor, ExternalLink, DownloadCloud, X, HelpCircle, Settings } from 'lucide-react';
 import { parseExcel, processData, exportToExcel } from './services/excelService';
 import { ProcessedResult, CheckStatus } from './types';
 import Dropzone from './components/Dropzone';
 import StatsBoard from './components/StatsBoard';
 import DataTable from './components/DataTable';
 import WindowPortal from './components/WindowPortal';
+import ExclusionModal from './components/ExclusionModal';
+
+const DEFAULT_EXCLUDED_IDS = [
+  '028968', '028976', '029583', '029582', '029569', '029570', '022155', '000464', 
+  '018039', '024369', '015715', '029585', '030175', '030081', '010654', '029821', 
+  '032541', '009137', '023258', '029445', '014951', '031759', '032204', '032332'
+];
 
 function App() {
   const [result, setResult] = useState<ProcessedResult | null>(null);
@@ -18,7 +25,22 @@ function App() {
   const [isStandalone, setIsStandalone] = useState(false);
   const [showInstallHelp, setShowInstallHelp] = useState(false);
 
+  // Exclusion List State
+  const [excludedIds, setExcludedIds] = useState<string[]>(DEFAULT_EXCLUDED_IDS);
+  const [showExclusionModal, setShowExclusionModal] = useState(false);
+
   useEffect(() => {
+    // Load exclusion list from localStorage
+    const savedIds = localStorage.getItem('excludedProductIds');
+    if (savedIds) {
+      try {
+        setExcludedIds(JSON.parse(savedIds));
+      } catch (e) {
+        console.error("Failed to parse saved excluded IDs", e);
+        setExcludedIds(DEFAULT_EXCLUDED_IDS);
+      }
+    }
+
     const checkStandalone = () => {
       const isStandaloneMode = window.matchMedia('(display-mode: standalone)').matches || 
                                (window.navigator as any).standalone === true;
@@ -36,6 +58,16 @@ function App() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
+
+  const saveExcludedIds = (newIds: string[]) => {
+    setExcludedIds(newIds);
+    localStorage.setItem('excludedProductIds', JSON.stringify(newIds));
+  };
+
+  const resetExcludedIds = () => {
+    setExcludedIds(DEFAULT_EXCLUDED_IDS);
+    localStorage.removeItem('excludedProductIds'); // Or set to default string
+  };
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -60,7 +92,8 @@ function App() {
       // Small delay for UI feedback
       setTimeout(() => {
         try {
-          const processedResult = processData(rawData);
+          // Pass the current excludedIds to the processing function
+          const processedResult = processData(rawData, excludedIds);
           setResult(processedResult);
         } catch (processError) {
           console.error(processError);
@@ -176,6 +209,15 @@ function App() {
         </div>
       )}
 
+      {/* Exclusion List Edit Modal */}
+      <ExclusionModal 
+        isOpen={showExclusionModal}
+        onClose={() => setShowExclusionModal(false)}
+        currentList={excludedIds}
+        onSave={saveExcludedIds}
+        onReset={resetExcludedIds}
+      />
+
       <div className="max-w-7xl mx-auto space-y-8 mt-4">
         
         <div className="text-center max-w-4xl mx-auto">
@@ -202,13 +244,27 @@ function App() {
                   <h4 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-4">處理規則說明</h4>
                   <div className="grid md:grid-cols-2 gap-6 text-sm text-slate-600">
                       <div>
-                          <p className="font-semibold mb-2 text-slate-800">篩選條件 (自動移除)</p>
+                          <div className="flex items-center justify-between mb-2">
+                             <p className="font-semibold text-slate-800">篩選條件 (自動移除)</p>
+                             <button 
+                                onClick={() => setShowExclusionModal(true)}
+                                className="px-3 py-1 bg-yellow-400 hover:bg-yellow-500 text-black text-xs font-bold rounded-md shadow-sm flex items-center transition-colors"
+                             >
+                                <Settings size={12} className="mr-1" />
+                                藥師點數編輯
+                             </button>
+                          </div>
+                          
                           <ul className="list-disc pl-5 space-y-1.5 marker:text-red-400">
                               <li>沒有 <span className="font-mono bg-slate-100 px-1 rounded">客戶編號</span> 的資料</li>
                               <li><span className="font-mono bg-slate-100 px-1 rounded">本次欠款</span> 大於 0</li>
                               <li><span className="font-mono bg-slate-100 px-1 rounded">點數</span> 等於 0</li>
                               <li><span className="font-mono bg-slate-100 px-1 rounded">單價</span> 等於 0</li>
                               <li>品類為 '05-2' 且 單位為 '罐'/'瓶'</li>
+                              <li>
+                                藥師點數品項排除 
+                                <span className="ml-1 text-slate-400 text-xs">({excludedIds.length} 筆設定)</span>
+                              </li>
                           </ul>
                       </div>
                       

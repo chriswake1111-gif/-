@@ -1,12 +1,14 @@
 
-const CACHE_NAME = 'sales-cleaner-v1';
+const CACHE_NAME = 'sales-cleaner-v1.1';
 const urlsToCache = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon.svg'
 ];
 
 self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Force the waiting service worker to become the active service worker
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
@@ -40,4 +42,5 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  return self.clients.claim(); // Immediately control all open clients
 });

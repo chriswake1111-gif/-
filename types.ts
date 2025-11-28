@@ -29,6 +29,7 @@ export interface ProcessingStats {
   zeroPointsCount: number;
   zeroPriceCount: number;
   excludedCategoryCount: number;
+  excludedProductIdCount: number; // New field for Pharmacist points exclusion
   categoryCounts: Record<string, number>;
 }
 

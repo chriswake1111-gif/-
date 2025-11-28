@@ -46,7 +46,8 @@ const generateFileName = (data: SalesRow[]): string => {
   return `${salesPerson}${month}月點數表.xlsx`;
 };
 
-export const processData = (rawData: any[]): ProcessedResult => {
+// Added excludedProductIds parameter
+export const processData = (rawData: any[], excludedProductIds: string[] = []): ProcessedResult => {
   const stats: ProcessingStats = {
     originalCount: rawData.length,
     finalCount: 0,
@@ -56,10 +57,13 @@ export const processData = (rawData: any[]): ProcessedResult => {
     zeroPointsCount: 0,
     zeroPriceCount: 0,
     excludedCategoryCount: 0,
+    excludedProductIdCount: 0,
     categoryCounts: {},
   };
 
   const finalData: SalesRow[] = [];
+  // Create a Set for faster lookup
+  const excludedIdsSet = new Set(excludedProductIds.map(id => String(id).trim()));
 
   for (const row of rawData) {
     // 1. Filter: Missing Customer ID
@@ -97,6 +101,13 @@ export const processData = (rawData: any[]): ProcessedResult => {
       continue;
     }
 
+    // 6. Filter: Specific Product IDs (Pharmacist Points Exclusion)
+    const productId = String(row['品項編號'] || '').trim();
+    if (excludedIdsSet.has(productId)) {
+        stats.excludedProductIdCount++;
+        continue;
+    }
+
     // Transformation
     const newCategory = getCategory(category1);
     stats.categoryCounts[newCategory] = (stats.categoryCounts[newCategory] || 0) + 1;
@@ -116,7 +127,7 @@ export const processData = (rawData: any[]): ProcessedResult => {
       '分類': newCategory,
       '日期': displayDate,
       '客戶編號': customerId,
-      '品項編號': row['品項編號'],
+      '品項編號': productId, // Use the trimmed product ID
       '品名': row['品名'],
       '單價': price,
       '數量': Number(row['數量'] || 0),

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { ProcessingStats } from '../types';
-import { Filter, Database, Trash2, ArrowRight, Tag } from 'lucide-react';
+import { Filter, Database, Trash2, ArrowRight, Tag, Ban } from 'lucide-react';
 
 interface StatsBoardProps {
   stats: ProcessingStats;
@@ -62,7 +62,7 @@ const StatsBoard: React.FC<StatsBoardProps> = ({ stats }) => {
       {/* Detail Breakdown */}
       <div className="lg:col-span-4 mt-2">
         <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 ml-1">刪除原因分析</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <StatItem 
                 label="沒有客戶編號" 
                 value={stats.missingCustomerIdCount} 
@@ -92,6 +92,12 @@ const StatsBoard: React.FC<StatsBoardProps> = ({ stats }) => {
                 value={stats.excludedCategoryCount} 
                 colorClass="text-orange-600 bg-orange-600"
                 icon={Trash2}
+            />
+             <StatItem 
+                label="藥師點數排除" 
+                value={stats.excludedProductIdCount} 
+                colorClass="text-yellow-600 bg-yellow-400"
+                icon={Ban}
             />
         </div>
       </div>
