@@ -166,16 +166,8 @@ export const processData = (rawData: any[], excludedProductIds: string[] = []): 
 export const exportToExcel = (data: SalesRow[], fileName: string) => {
   const workbook = XLSX.utils.book_new();
 
-  const mapToExportRow = (row: SalesRow) => ({
-    '分類': row['分類'],
-    '日期': row['日期'],
-    '客戶編號': row['客戶編號'],
-    '品項編號': row['品項編號'],
-    '品名': row['品名'],
-    '單價': row['單價'],
-    '數量': row['數量'],
-    '點數': row['點數'],
-  });
+  // Define the exact column order for the export
+  const columns = ['分類', '日期', '客戶編號', '品項編號', '品名', '單價', '數量', '點數'];
 
   const sheets = [
     { name: '開發名單', filter: (row: SalesRow) => row['檢查'] === '開發' },
@@ -185,11 +177,44 @@ export const exportToExcel = (data: SalesRow[], fileName: string) => {
   let hasData = false;
 
   sheets.forEach(sheet => {
-    const sheetData = data.filter(sheet.filter).map(mapToExportRow);
-    if (sheetData.length > 0) {
-      const ws = XLSX.utils.json_to_sheet(sheetData);
-      XLSX.utils.book_append_sheet(workbook, ws, sheet.name);
+    const sheetRows = data.filter(sheet.filter);
+    
+    if (sheetRows.length > 0) {
       hasData = true;
+
+      // 1. Calculate Total Points for this sheet
+      const totalPoints = sheetRows.reduce((sum, row) => sum + (row['點數'] || 0), 0);
+
+      // 2. Prepare Data Rows (Array of Arrays)
+      const dataAOA = sheetRows.map(row => [
+        row['分類'],
+        row['日期'],
+        row['客戶編號'],
+        row['品項編號'],
+        row['品名'],
+        row['單價'],
+        row['數量'],
+        row['點數']
+      ]);
+
+      // 3. Construct Final Worksheet Data
+      // Determine label based on sheet name
+      const pointsLabel = sheet.name === '開發名單' ? '開發點數' : '回購點數';
+
+      // Row 1: Total Points with dynamic label
+      // Row 2: Headers
+      // Row 3+: Data
+      const worksheetData = [
+        [`${pointsLabel}: ${totalPoints}`], // Row 1
+        columns,                            // Row 2 (Headers)
+        ...dataAOA                          // Data
+      ];
+
+      // Convert Array of Arrays to Worksheet
+      const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+      
+      // Add the sheet to workbook
+      XLSX.utils.book_append_sheet(workbook, ws, sheet.name);
     }
   });
 

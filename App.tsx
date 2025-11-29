@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { Download, FileSpreadsheet, RefreshCw, CheckCircle2, Monitor, ExternalLink, DownloadCloud, X, HelpCircle, Settings } from 'lucide-react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { Download, FileSpreadsheet, RefreshCw, CheckCircle2, Monitor, ExternalLink, DownloadCloud, X, HelpCircle, Settings, Calculator } from 'lucide-react';
 import { parseExcel, processData, exportToExcel } from './services/excelService';
 import { ProcessedResult, CheckStatus } from './types';
 import Dropzone from './components/Dropzone';
@@ -316,10 +316,12 @@ function App() {
                         <span className="text-xs text-slate-500">{result.suggestedFileName}</span>
                     </div>
                 </div>
-                <div className="flex space-x-3 w-full sm:w-auto">
+                
+                <div className="flex items-center space-x-3 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 justify-end">
+                    
                     <button
                         onClick={() => setShowPopup(!showPopup)}
-                        className={`flex-1 sm:flex-none justify-center inline-flex items-center px-4 py-2 border shadow-sm text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all ${
+                        className={`flex-none justify-center inline-flex items-center px-4 py-2 border shadow-sm text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all ${
                             showPopup ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
                         }`}
                     >
@@ -329,14 +331,14 @@ function App() {
 
                     <button
                         onClick={handleReset}
-                        className="flex-1 sm:flex-none justify-center inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
+                        className="flex-none justify-center inline-flex items-center px-4 py-2 border border-slate-300 shadow-sm text-sm font-medium rounded-lg text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all"
                     >
                         <RefreshCw size={16} className="mr-2" />
                         重新上傳
                     </button>
                     <button
                         onClick={handleExport}
-                        className="flex-1 sm:flex-none justify-center inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all hover:shadow-md"
+                        className="flex-none justify-center inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all hover:shadow-md"
                     >
                         <Download size={16} className="mr-2" />
                         匯出 Excel

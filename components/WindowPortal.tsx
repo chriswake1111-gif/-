@@ -51,7 +51,8 @@ const WindowPortal: React.FC<WindowPortalProps> = ({ children, closeWindowPortal
         copyScript("https://cdn.tailwindcss.com");
         copyStyle("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
-        win.document.body.className = "bg-slate-50 text-slate-900 font-sans p-4 h-screen flex flex-col";
+        // Responsive body classes: smaller padding on small screens (p-2) to maximize data view
+        win.document.body.className = "bg-slate-50 text-slate-900 font-sans p-2 sm:p-4 h-screen flex flex-col overflow-hidden";
         
         const el = win.document.createElement('div');
         el.className = "h-full w-full flex flex-col";

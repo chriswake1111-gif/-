@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { SalesRow, CheckStatus } from '../types';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Calculator } from 'lucide-react';
 
 interface DataTableProps {
   data: SalesRow[];
@@ -30,6 +30,10 @@ const DataTable: React.FC<DataTableProps> = ({
     return data.slice(start, start + ITEMS_PER_PAGE);
   }, [data, currentPage]);
 
+  const totalPoints = useMemo(() => {
+    return data.reduce((sum, row) => sum + (row['點數'] || 0), 0);
+  }, [data]);
+
   const allColumns = ['分類', '日期', '客戶編號', '品項編號', '品名', '單價', '數量', '點數'];
   const displayColumns = visibleColumns 
     ? allColumns.filter(col => visibleColumns.includes(col)) 
@@ -44,38 +48,58 @@ const DataTable: React.FC<DataTableProps> = ({
     }
   };
 
-  const containerHeightClass = variant === 'popup' ? 'h-full' : 'h-[650px]';
+  const isPopup = variant === 'popup';
+  const containerHeightClass = isPopup ? 'h-full' : 'h-[650px]';
+  const headerPaddingClass = isPopup ? 'p-3' : 'p-4';
 
   return (
     <div className={`bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col ${containerHeightClass}`}>
-      <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
-        <div className="flex items-center space-x-2">
-            <h3 className="font-semibold text-slate-700">
-                {variant === 'popup' ? '獨立視窗編輯模式' : '資料預覽與編輯'}
+      <div className={`${headerPaddingClass} border-b border-slate-200 bg-slate-50 flex flex-wrap gap-x-3 gap-y-2 justify-between items-center shrink-0`}>
+        <div className="flex items-center gap-3 flex-wrap flex-1 min-w-0">
+            <h3 className="font-semibold text-slate-700 whitespace-nowrap truncate">
+                {isPopup ? '快速檢查' : '資料預覽與編輯'}
             </h3>
-            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full font-medium">
-                總計 {data.length} 筆
-            </span>
+            
+            <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full font-medium whitespace-nowrap border border-indigo-200">
+                    {data.length} 筆
+                </span>
+                
+                {/* Distinct styling for Total Points in Popup */}
+                <span className={`
+                    flex items-center font-bold whitespace-nowrap rounded-full border transition-all
+                    ${isPopup 
+                        ? 'px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white border-transparent shadow-md ring-2 ring-amber-100' 
+                        : 'px-2.5 py-1 bg-amber-100 text-amber-800 border-amber-200 text-xs shadow-sm'
+                    }
+                `}>
+                    <Calculator size={isPopup ? 18 : 12} className={isPopup ? "mr-2 text-amber-100" : "mr-1.5"} />
+                    {isPopup ? '預估點數：' : '點數: '}
+                    <span className={isPopup ? "text-lg ml-1 font-mono tracking-tight" : ""}>
+                        {totalPoints.toLocaleString()}
+                    </span>
+                </span>
+            </div>
         </div>
         
-        <div className="flex items-center space-x-2">
-            <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30">
+        <div className="flex items-center space-x-1 ml-auto shrink-0">
+            <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 transition-colors">
                 <ChevronsLeft size={18} />
             </button>
-            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30">
+            <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 transition-colors">
                 <ChevronLeft size={18} />
             </button>
-            <span className="text-sm text-slate-600 font-medium px-2">{currentPage} / {totalPages}</span>
-            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30">
+            <span className="text-sm text-slate-600 font-medium px-2 whitespace-nowrap select-none min-w-[3rem] text-center">{currentPage} / {totalPages}</span>
+            <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 transition-colors">
                 <ChevronRight size={18} />
             </button>
-            <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30">
+            <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-1 rounded hover:bg-slate-200 disabled:opacity-30 transition-colors">
                 <ChevronsRight size={18} />
             </button>
         </div>
       </div>
       
-      <div className="overflow-auto flex-1">
+      <div className="overflow-auto flex-1 w-full">
         <table className="w-full text-sm text-left text-slate-600 relative">
           <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 z-20 shadow-sm">
             <tr>
