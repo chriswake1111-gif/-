@@ -31,7 +31,13 @@ const DataTable: React.FC<DataTableProps> = ({
   }, [data, currentPage]);
 
   const totalPoints = useMemo(() => {
-    return data.reduce((sum, row) => sum + (row['點數'] || 0), 0);
+    return data.reduce((sum, row) => {
+      // Exclude points for '現金-小兒銷售' category
+      if (row['分類'] === '現金-小兒銷售') {
+        return sum;
+      }
+      return sum + (row['點數'] || 0);
+    }, 0);
   }, [data]);
 
   const allColumns = ['分類', '日期', '客戶編號', '品項編號', '品名', '單價', '數量', '點數'];

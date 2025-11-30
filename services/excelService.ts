@@ -182,8 +182,11 @@ export const exportToExcel = (data: SalesRow[], fileName: string) => {
     if (sheetRows.length > 0) {
       hasData = true;
 
-      // 1. Calculate Total Points for this sheet
-      const totalPoints = sheetRows.reduce((sum, row) => sum + (row['點數'] || 0), 0);
+      // 1. Calculate Total Points for this sheet (Excluding '現金-小兒銷售')
+      const totalPoints = sheetRows.reduce((sum, row) => {
+        if (row['分類'] === '現金-小兒銷售') return sum;
+        return sum + (row['點數'] || 0);
+      }, 0);
 
       // 2. Prepare Data Rows (Array of Arrays)
       const dataAOA = sheetRows.map(row => [
@@ -194,7 +197,8 @@ export const exportToExcel = (data: SalesRow[], fileName: string) => {
         row['品名'],
         row['單價'],
         row['數量'],
-        row['點數']
+        // For '現金-小兒銷售', leave Points blank (empty string)
+        row['分類'] === '現金-小兒銷售' ? '' : row['點數']
       ]);
 
       // 3. Construct Final Worksheet Data
