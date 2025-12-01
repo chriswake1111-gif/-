@@ -80,8 +80,8 @@ export const processData = (rawData: any[], excludedProductIds: string[] = []): 
     }
 
     // 3. Filter: Points == 0
-    const points = Number(row['員工點數'] || row['點數'] || 0);
-    if (points === 0) {
+    const rawPoints = Number(row['員工點數'] || row['點數'] || 0);
+    if (rawPoints === 0) {
       stats.zeroPointsCount++;
       continue;
     }
@@ -119,9 +119,22 @@ export const processData = (rawData: any[], excludedProductIds: string[] = []): 
     // Flexible column detection for salesperson
     const salesPersonName = row['業務姓名'] || row['業務'] || row['銷售人員'] || row['業務員'] || '';
 
+    // Quantity logic
+    const quantity = Number(row['數量'] || 0);
+
+    // Points Calculation Logic
+    let finalPoints = rawPoints;
+    
+    // Rule: For '成人奶粉' and '成人奶水', points = original points / quantity
+    if (newCategory === '成人奶粉' || newCategory === '成人奶水') {
+        if (quantity > 0) {
+            finalPoints = Math.floor(rawPoints / quantity);
+        }
+    }
+
     finalData.push({
       _id: Math.random().toString(36).substring(2, 9),
-      _originalPoints: points,
+      _originalPoints: finalPoints, // Store the calculated points as original base for further operations (like Repurchase halving)
       _originalOrderId: orderId,
       '檢查': '開發' as CheckStatus,
       '分類': newCategory,
@@ -130,8 +143,8 @@ export const processData = (rawData: any[], excludedProductIds: string[] = []): 
       '品項編號': productId, // Use the trimmed product ID
       '品名': row['品名'],
       '單價': price,
-      '數量': Number(row['數量'] || 0),
-      '點數': points,
+      '數量': quantity,
+      '點數': finalPoints,
       '業務姓名': salesPersonName,
     });
   }
